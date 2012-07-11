@@ -3,6 +3,7 @@ var WATCH_PREFIX = "/watch?v="
 var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7UXt8-c4vZ2lmFAo5a23PfNwJ7TsUjBXUQ'
 
 var global_queue = [];
+var player = null;
 
 var querystring = require('querystring')
 var https = require('https')
@@ -99,7 +100,7 @@ function processYoutube(url) {
 
 function playSong(path) {
   console.log("Playing " + path);
-  var player = spawn('afplay', [path]);
+  player = spawn('afplay', [path]);
 
   player.stdout.on('data', function(data) {
     console.log('stdout: ' + data);
@@ -111,6 +112,7 @@ function playSong(path) {
 
   player.on('exit', function(code) {
     console.log('afplay stopped with code: ' + code);
+    player = null;
     var new_path = global_queue.shift();
     console.log(global_queue);
     
@@ -129,15 +131,16 @@ io.sockets.on('connection', function(socket) {
 });
 
 function addSong(path) {
-  if (global_queue.length == 0) {
-    console.log("restarting queue");
-    playSong(path);
-  }
+  global_queue.push(path);
+  console.log('Adding song to queue:');
+  console.log(global_queue);
 
-  else {
-    global_queue.push(path);
-    console.log('Adding song to queue:');
-    console.log(global_queue);
+  if (global_queue.length == 1) {
+    console.log("restarting queue");
+    if (player == null) {
+      global_queue.shift()
+      playSong(path);
+    }
   }
 }
 
