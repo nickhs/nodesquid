@@ -113,14 +113,14 @@ function playSong(path) {
 
   player.on('exit', function(code) {
     console.log('afplay stopped with code: ' + code);
-    global_queue.shift();
+    newPath = global_queue.shift();
     
     if (global_queue.length == 0) {
       console.log("queue is empty, stopping!");
     }
 
     else {
-      playSong(path);
+      playSong(newPath);
     }
   });
 }
