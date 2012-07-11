@@ -83,7 +83,6 @@ function processYoutube(url) {
 }
 
 function playSong(path) {
-  spawn('killall', ['afplay']);
   var player = spawn('afplay', [path]);
 
   player.stdout.on('data', function(data) {
