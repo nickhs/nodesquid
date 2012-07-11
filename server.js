@@ -90,8 +90,7 @@ function processYoutube(url) {
     console.log("File ID is: "+fileID);
     var path = __dirname + "/" + fileID.replace('\n', '');
     console.log(path);
-    global_queue.push(path)
-    playSong(path);
+    addSong(path)
   });
 
   youtube.stderr.on('data', function(data) {
@@ -112,12 +111,30 @@ function playSong(path) {
   });
 
   player.on('exit', function(code) {
-    console.log('child process existed with code: ' + code);
+    console.log('afplay stopped with code: ' + code);
+    
+    if (global_queue.length == 0) {
+      console.log("queue is empty, stopping!");
+    }
+
+    else {
+      var path = global_queue.shift();
+      playSong(path);
+    }
   });
 }
 
 io.sockets.on('connection', function(socket) {
   console.log("Client connected!");
 });
+
+function addSong(path) {
+  global_queue.push(path);
+
+  if (global_queue.length == 1) {
+    var path = global_queue.shift();
+    playSong(path);
+  }
+}
 
 app.listen(8000);
