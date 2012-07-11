@@ -25,6 +25,7 @@ app.get('/say/*', function(req, res) {
   res.send('You wanted' + statement);
 
   spawn('say', [statement]);
+  res.send('ok');
 });
 
 app.get('/volume/:volume', function(req, res) {
@@ -32,6 +33,7 @@ app.get('/volume/:volume', function(req, res) {
   console.log(string);
 
   spawn('osascript', ['-e', string]);
+  res.send('ok');
 });
 
 app.get('/youtube/*', function(req, res) {
