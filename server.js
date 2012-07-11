@@ -100,6 +100,7 @@ function processYoutube(url) {
 }
 
 function playSong(path) {
+  console.log("Playing " + path);
   var player = spawn('afplay', [path]);
 
   player.stdout.on('data', function(data) {
@@ -112,13 +113,13 @@ function playSong(path) {
 
   player.on('exit', function(code) {
     console.log('afplay stopped with code: ' + code);
+    global_queue.shift();
     
     if (global_queue.length == 0) {
       console.log("queue is empty, stopping!");
     }
 
     else {
-      var path = global_queue.shift();
       playSong(path);
     }
   });
@@ -130,9 +131,9 @@ io.sockets.on('connection', function(socket) {
 
 function addSong(path) {
   global_queue.push(path);
+  console.log('Adding song to queue: '+global_queue);
 
   if (global_queue.length == 1) {
-    var path = global_queue.shift();
     playSong(path);
   }
 }
