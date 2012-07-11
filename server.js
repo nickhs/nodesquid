@@ -92,8 +92,7 @@ app.get('/youtube/*', function(req, gresp) {
 
     res.on('end', function() {
       var response = JSON.parse(pageData);
-
-      console.log(response.feed.entry[0])
+      
       var queueObject = {
         'url': response.feed.entry[0].link[0].href,
         'title': response.feed.entry[0].media$group.media$title.$t,
@@ -106,6 +105,9 @@ app.get('/youtube/*', function(req, gresp) {
   });
 });
 
+app.get('/queue', function(req, res) {
+  res.json(global_queue);
+});
 
 // Playback functions
 function processYoutube(q) {
@@ -160,7 +162,7 @@ function playSong(path) {
       playSong(new_q.path);
     }
   });
-}
+};
 
 function addSong(q) {
   global_queue.push(q);
