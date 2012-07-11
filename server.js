@@ -2,6 +2,8 @@ var YOUTUBE = "http://www.youtube.com"
 var WATCH_PREFIX = "/watch?v="
 var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7UXt8-c4vZ2lmFAo5a23PfNwJ7TsUjBXUQ'
 
+var global_queue = [];
+
 var querystring = require('querystring')
 var https = require('https')
 var fs = require('fs')
@@ -71,7 +73,6 @@ app.get('/youtube/*', function(req, res) {
 
 function processYoutube(url) {
   var youtube = spawn('youtube-dl', ['--extract-audio', url]);
-  
   var fileID = "";
 
   youtube.stdout.on('data', function(data) {
@@ -89,6 +90,7 @@ function processYoutube(url) {
     console.log("File ID is: "+fileID);
     var path = __dirname + "/" + fileID.replace('\n', '');
     console.log(path);
+    global_queue.push(path)
     playSong(path);
   });
 
