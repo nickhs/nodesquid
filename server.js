@@ -1,17 +1,46 @@
+/** 
+ * Static variables.
+ */
+
 var YOUTUBE = "http://www.youtube.com"
 var WATCH_PREFIX = "/watch?v="
 var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7UXt8-c4vZ2lmFAo5a23PfNwJ7TsUjBXUQ'
 
+/**
+ * Global variables.
+ */
+
 var global_queue = [];
 var player = null;
 
+// Dependencies
 var querystring = require('querystring')
 var https = require('https')
 var fs = require('fs')
-
-var app = require('express').createServer();
+var express= require('express')
 var io = require('socket.io').listen(app);
 var spawn = require('child_process').spawn;
+var app = module.exports = express.createServer();
+
+// Configuration
+
+app.configure(function(){
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.static(__dirname + '/public'));
+});
+
+app.configure('development', function(){
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('production', function(){
+  app.use(express.errorHandler());
+});
+
+// Routes and logic
 
 app.get('/', function(req, res) {
   res.send('Hey there (: ');
@@ -72,6 +101,8 @@ app.get('/youtube/*', function(req, res) {
   });
 });
 
+
+// Playback functions
 function processYoutube(url) {
   var youtube = spawn('youtube-dl', ['--extract-audio', url]);
   var fileID = "";
@@ -96,7 +127,7 @@ function processYoutube(url) {
     console.log("MAN DOWN!");
     console.log(data);
   });
-}
+};
 
 function playSong(path) {
   console.log("Playing " + path);
@@ -142,6 +173,8 @@ function addSong(path) {
       playSong(path);
     }
   }
-}
+};
 
-app.listen(8000);
+app.listen(8000, function() {
+  console.log("express server listening on port %d in %s mode", app.address().port, app.settings.env);
+});
