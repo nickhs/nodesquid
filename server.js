@@ -54,10 +54,8 @@ app.get('/test/', function(req, res) {
 
 app.get('/say/*', function(req, res) {
   var statement = req.params[0];
-  res.send('You wanted' + statement);
-
   spawn('say', [statement]);
-  res.send('ok');
+  res.json({'result': 'success', 'string': statement});
 });
 
 app.get('/volume/:volume', function(req, res) {
@@ -65,12 +63,11 @@ app.get('/volume/:volume', function(req, res) {
   console.log(string);
 
   spawn('osascript', ['-e', string]);
-  res.send('ok');
+  res.json({'result': 'success', 'volume': req.params.volume});
 });
 
-app.get('/youtube/*', function(req, res) {
+app.get('/youtube/*', function(req, gresp) {
   var search = req.params[0];
-  res.send('You asked for ' + search);
 
   var qoptions = {
     'q': search,
@@ -95,16 +92,24 @@ app.get('/youtube/*', function(req, res) {
 
     res.on('end', function() {
       var response = JSON.parse(pageData);
-      var url = response.feed.entry[0].link[0].href;
-      processYoutube(url);
+
+      console.log(response.feed.entry[0])
+      var queueObject = {
+        'url': response.feed.entry[0].link[0].href,
+        'title': response.feed.entry[0].media$group.media$title.$t,
+        'length': response.feed.entry[0].media$group.yt$duration.seconds,
+      }
+
+      gresp.json(queueObject);
+      processYoutube(queueObject);
     });
   });
 });
 
 
 // Playback functions
-function processYoutube(url) {
-  var youtube = spawn('youtube-dl', ['--extract-audio', url]);
+function processYoutube(q) {
+  var youtube = spawn('youtube-dl', ['--extract-audio', q.url]);
   var fileID = "";
 
   youtube.stdout.on('data', function(data) {
@@ -119,8 +124,8 @@ function processYoutube(url) {
   youtube.on('exit', function(code) {
     console.log("File ID is: "+fileID);
     var path = __dirname + "/" + fileID.replace('\n', '');
-    console.log(path);
-    addSong(path)
+    q.path = path;
+    addSong(q);
   });
 
   youtube.stderr.on('data', function(data) {
@@ -144,25 +149,21 @@ function playSong(path) {
   player.on('exit', function(code) {
     console.log('afplay stopped with code: ' + code);
     player = null;
-    var new_path = global_queue.shift();
+    var new_q = global_queue.shift();
     console.log(global_queue);
     
-    if (new_path == undefined) {
+    if (new_q == undefined) {
       console.log("queue is empty, stopping!");
     }
 
     else {
-      playSong(new_path);
+      playSong(new_q.path);
     }
   });
 }
 
-io.sockets.on('connection', function(socket) {
-  console.log("Client connected!");
-});
-
-function addSong(path) {
-  global_queue.push(path);
+function addSong(q) {
+  global_queue.push(q);
   console.log('Adding song to queue:');
   console.log(global_queue);
 
@@ -170,7 +171,7 @@ function addSong(path) {
     console.log("restarting queue");
     if (player == null) {
       global_queue.shift()
-      playSong(path);
+      playSong(q.path);
     }
   }
 };
