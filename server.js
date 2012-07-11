@@ -22,16 +22,15 @@ var io = require('socket.io').listen(app);
 var spawn = require('child_process').spawn;
 var app = module.exports = express.createServer();
 
-// Configuration
-
+// Authorize
 function authorize(username, password) {
-  return 'sys' === username & 'foo' === password;
+  return 'sys' === username & 'foo2' === password;
 }
 
+// Configuration
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.use(express.basicAuth(authorize));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.static(__dirname + '/public'));
@@ -57,13 +56,13 @@ app.get('/test/', function(req, res) {
   res.end(f);
 });
 
-app.get('/say/*', function(req, res) {
+app.get('/s/*', express.basicAuth(authorize), function(req, res) {
   var statement = req.params[0];
   spawn('say', [statement]);
   res.json({'result': 'success', 'string': statement});
 });
 
-app.get('/volume/:volume', function(req, res) {
+app.get('/v/:volume', express.basicAuth(authorize), function(req, res) {
   var string = "set Volume " + req.params.volume;
   console.log(string);
 
@@ -71,7 +70,7 @@ app.get('/volume/:volume', function(req, res) {
   res.json({'result': 'success', 'volume': req.params.volume});
 });
 
-app.get('/youtube/*', function(req, gresp) {
+app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
   var search = req.params[0];
 
   var qoptions = {
