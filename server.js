@@ -179,7 +179,7 @@ function addSong(q) {
     console.log("restarting queue");
     if (player == null) {
       global_queue.shift();
-      io.socket.emit('play', q)
+      io.sockets.emit('play', q)
       playSong(q.path);
     }
   }
