@@ -71,7 +71,21 @@ function processYoutube(url) {
     youtube.on('exit', function(code) {
         console.log("Finished!");
         console.log("File ID is: "+fileID);
-        var player = spawn('avplay', [fileID]);
+        var path = __dirname + "/" + fileID.replace('\n', '');
+        console.log(path);
+        var player = spawn('afplay', [path]);
+
+        player.stdout.on('data', function(data) {
+          console.log('stdout: ' + data);
+        });
+
+        player.stderr.on('data', function(data) {
+          console.log('stderr: ' + data);
+        });
+
+        player.on('exit', function(code) {
+          console.log('child process existed with code: ' + code);
+        });
     });
 
     youtube.stderr.on('data', function(data) {
