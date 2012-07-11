@@ -20,6 +20,20 @@ app.get('/test/', function(req, res) {
   res.end(f);
 });
 
+app.get('/say/*', function(req, res) {
+  var statement = req.params[0];
+  res.send('You wanted' + statement);
+
+  spawn('say', [statement]);
+});
+
+app.get('/volume/:volume', function(req, res) {
+  var string = "set Volume " + req.params.volume;
+  console.log(string);
+
+  spawn('osascript', ['-e', string]);
+});
+
 app.get('/youtube/*', function(req, res) {
   var search = req.params[0];
   res.send('You asked for ' + search);
