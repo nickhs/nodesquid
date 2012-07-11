@@ -24,9 +24,14 @@ var app = module.exports = express.createServer();
 
 // Configuration
 
+function authorize(username, password) {
+  return 'sys' === username & 'foo' === password;
+}
+
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
+  app.use(express.basicAuth(authorize));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.static(__dirname + '/public'));
@@ -159,6 +164,7 @@ function playSong(path) {
     }
 
     else {
+      io.socket.emit('play', new_q);
       playSong(new_q.path);
     }
   });
@@ -172,7 +178,8 @@ function addSong(q) {
   if (global_queue.length == 1) {
     console.log("restarting queue");
     if (player == null) {
-      global_queue.shift()
+      global_queue.shift();
+      io.socket.emit('play', q)
       playSong(q.path);
     }
   }
