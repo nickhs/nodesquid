@@ -111,6 +111,11 @@ app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
         gresp.json({'result': 'no matches found'});
         return;
       }
+
+      if (response.feed.entry[0].media$group.yt$duration.seconds > 600) {
+        gresp.json({'result': 'song is too long :('});
+        return;
+      }
       
       var queueObject = {
         'url': response.feed.entry[0].link[0].href,
