@@ -3,7 +3,6 @@
  */
 
 var YOUTUBE = "http://www.youtube.com"
-var WATCH_PREFIX = "/watch?v="
 var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7UXt8-c4vZ2lmFAo5a23PfNwJ7TsUjBXUQ'
 
 /**
@@ -107,6 +106,11 @@ app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
 
     res.on('end', function() {
       var response = JSON.parse(pageData);
+
+      if (response.feed.openSearch$totalResults.$t == 0) {
+        gresp.json({'result': 'no matches found'});
+        return;
+      }
       
       var queueObject = {
         'url': response.feed.entry[0].link[0].href,
