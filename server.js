@@ -67,6 +67,7 @@ app.get('/v/:volume', express.basicAuth(authorize), function(req, res) {
 
   spawn('osascript', ['-e', string]);
   res.json({'result': 'success', 'volume': req.params.volume});
+  io.sockets.emit('volume', {'volume': req.params.volume});
 });
 
 app.get('/k/', express.basicAuth(authorize), function(req, res) {
