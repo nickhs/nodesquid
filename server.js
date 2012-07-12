@@ -120,7 +120,7 @@ function processYoutube(q) {
 
   youtube.stdout.on('data', function(data) {
     data = String(data);
-    io.sockets.emit('news', data);
+    io.sockets.emit('download', data);
     if (data.indexOf('ffmpeg') != -1) {
       data = data.split(':');
       fileID = data[data.length-1].replace(' ', '');
@@ -163,7 +163,7 @@ function playSong(path) {
     }
 
     else {
-      io.socket.emit('play', new_q);
+      io.sockets.emit('play', new_q);
       playSong(new_q.path);
     }
   });
