@@ -146,7 +146,7 @@ app.get('/queue', function(req, res) {
   res.json(global_queue);
 });
 
-app.get('/dqueue'. function(req, res) {
+app.get('/dqueue', function(req, res) {
   res.json(download_list);
 });
 
