@@ -10,6 +10,7 @@ var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7
  */
 
 var global_queue = [];
+var download_list = [];
 var player = null;
 
 // Dependencies
@@ -21,9 +22,17 @@ var app = module.exports = express.createServer();
 var io = require('socket.io').listen(app);
 var spawn = require('child_process').spawn;
 
-// Authorize
+// Custom Middleware
 function authorize(username, password) {
   return 'sys' === username & 'foo2' === password;
+}
+
+var allowCrossDomain = function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  next();
 }
 
 // Configuration
@@ -32,6 +41,7 @@ app.configure(function(){
   app.set('view engine', 'jade');
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.use(allowCrossDomain);
   app.use(express.static(__dirname + '/public'));
 });
 
@@ -42,6 +52,7 @@ app.configure('development', function(){
 app.configure('production', function(){
   app.use(express.errorHandler());
 });
+
 
 // Routes and logic
 
@@ -122,6 +133,7 @@ app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
         'url': response.feed.entry[0].link[0].href,
         'title': response.feed.entry[0].media$group.media$title.$t,
         'length': response.feed.entry[0].media$group.yt$duration.seconds,
+        'state': 'unknown',
       }
 
       gresp.json(queueObject);
@@ -134,14 +146,20 @@ app.get('/queue', function(req, res) {
   res.json(global_queue);
 });
 
+app.get('/dqueue'. function(req, res) {
+  res.json(download_list);
+});
+
 // Playback functions
 function processYoutube(q) {
+  download_list.push(q)
   var youtube = spawn('youtube-dl', ['--extract-audio', q.url]);
   var fileID = "";
 
   youtube.stdout.on('data', function(data) {
     data = String(data);
     io.sockets.emit('download', data);
+    q.state = data;
     if (data.indexOf('ffmpeg') != -1) {
       data = data.split(':');
       fileID = data[data.length-1].replace(' ', '');
@@ -152,12 +170,22 @@ function processYoutube(q) {
     console.log("File ID is: "+fileID);
     var path = __dirname + "/" + fileID.replace('\n', '');
     q.path = path;
+    q.state = 'done';
+
+    for (var item in download_list) {
+      if (download_list[item] == q) {
+        download_list.splice(item, 1);
+        break;
+      }
+    }
+
     addSong(q);
   });
 
   youtube.stderr.on('data', function(data) {
     console.log("MAN DOWN!");
     console.log(data);
+    q.state = 'broken'
   });
 };
 
