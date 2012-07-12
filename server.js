@@ -18,9 +18,9 @@ var querystring = require('querystring')
 var https = require('https')
 var fs = require('fs')
 var express= require('express')
+var app = module.exports = express.createServer();
 var io = require('socket.io').listen(app);
 var spawn = require('child_process').spawn;
-var app = module.exports = express.createServer();
 
 // Authorize
 function authorize(username, password) {
@@ -68,6 +68,17 @@ app.get('/v/:volume', express.basicAuth(authorize), function(req, res) {
 
   spawn('osascript', ['-e', string]);
   res.json({'result': 'success', 'volume': req.params.volume});
+});
+
+app.get('/k/', express.basicAuth(authorize), function(req, res) {
+  if (player != null) {
+    player.kill();
+    res.json({'result': 'success'});
+  }
+
+  else {
+    res.json({'result': 'no player playing'});
+  }
 });
 
 app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
@@ -153,19 +164,8 @@ function playSong(path) {
   });
 
   player.on('exit', function(code) {
-    console.log('afplay stopped with code: ' + code);
-    player = null;
-    var new_q = global_queue.shift();
-    console.log(global_queue);
-    
-    if (new_q == undefined) {
-      console.log("queue is empty, stopping!");
-    }
-
-    else {
-      io.sockets.emit('play', new_q);
-      playSong(new_q.path);
-    }
+    console.log("starting next song");
+    nextSong();
   });
 };
 
@@ -175,12 +175,27 @@ function addSong(q) {
   console.log(global_queue);
 
   if (global_queue.length == 1) {
-    console.log("restarting queue");
     if (player == null) {
       global_queue.shift();
       io.sockets.emit('play', q)
       playSong(q.path);
     }
+  }
+};
+
+function nextSong() {
+  console.log("Playing next song");
+  player = null;
+  var q = global_queue.shift();
+  console.log(global_queue);
+  
+  if (q == undefined) {
+    console.log("queue is empty, stopping!");
+  }
+
+  else {
+    io.sockets.emit('play', q);
+    playSong(q.path);
   }
 };
 
