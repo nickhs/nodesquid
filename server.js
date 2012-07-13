@@ -78,7 +78,7 @@ app.get('/v/:volume', express.basicAuth(authorize), function(req, res) {
 
   spawn('osascript', ['-e', string]);
   res.json({'result': 'success', 'volume': req.params.volume});
-  io.sockets.emit('volume', {'volume': req.params.volume});
+  io.sockets.emit('volume', {'result': 'success', 'volume': req.params.volume});
 });
 
 app.get('/k/', express.basicAuth(authorize), function(req, res) {
@@ -129,7 +129,11 @@ app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
         return;
       }
       
+      var id = response.feed.entry[0].id.$t.split('/');
+      id = id[id.length-1];
+
       var queueObject = {
+        'id': id,
         'url': response.feed.entry[0].link[0].href,
         'title': response.feed.entry[0].media$group.media$title.$t,
         'length': response.feed.entry[0].media$group.yt$duration.seconds,
@@ -152,40 +156,51 @@ app.get('/dqueue', function(req, res) {
 
 // Playback functions
 function processYoutube(q) {
-  download_list.push(q)
-  var youtube = spawn('youtube-dl', ['--extract-audio', q.url]);
-  var fileID = "";
-
-  youtube.stdout.on('data', function(data) {
-    data = String(data);
-    io.sockets.emit('download', data);
-    q.state = data;
-    if (data.indexOf('ffmpeg') != -1) {
-      data = data.split(':');
-      fileID = data[data.length-1].replace(' ', '');
-    }
-  });
-
-  youtube.on('exit', function(code) {
-    console.log("File ID is: "+fileID);
-    var path = __dirname + "/" + fileID.replace('\n', '');
-    q.path = path;
-    q.state = 'done';
-
-    for (var item in download_list) {
-      if (download_list[item] == q) {
-        download_list.splice(item, 1);
-        break;
+  fs.readdir(__dirname,  function(err, files) {
+    for (file in files) {
+      if (q.id == files[file].split('.')[0]) {
+        console.log("Playing cached version");
+        q.path = files[file];
+        addSong(q);
+        return;
       }
     }
+    
+    download_list.push(q);
+    var youtube = spawn('youtube-dl', ['--extract-audio', q.url]);
+    var fileID = "";
 
-    addSong(q);
-  });
+    youtube.stdout.on('data', function(data) {
+      data = String(data);
+      io.sockets.emit('download', data);
+      q.state = data;
+      if (data.indexOf('ffmpeg') != -1) {
+        data = data.split(':');
+        fileID = data[data.length-1].replace(' ', '');
+      }
+    });
 
-  youtube.stderr.on('data', function(data) {
-    console.log("MAN DOWN!");
-    console.log(data);
-    q.state = 'broken'
+    youtube.on('exit', function(code) {
+      console.log("File ID is: "+fileID);
+      var path = __dirname + "/" + fileID.replace('\n', '');
+      q.path = path;
+      q.state = 'done';
+
+      for (var item in download_list) {
+        if (download_list[item] == q) {
+          download_list.splice(item, 1);
+          break;
+        }
+      }
+
+      addSong(q);
+    });
+
+    youtube.stderr.on('data', function(data) {
+      console.log("MAN DOWN!");
+      console.log(data);
+      q.state = 'broken'
+    });
   });
 };
 
