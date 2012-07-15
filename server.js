@@ -39,6 +39,7 @@ var allowCrossDomain = function(req, res, next) {
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
+  app.set('view options', { layout: false });
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(allowCrossDomain);
@@ -57,7 +58,7 @@ app.configure('production', function(){
 // Routes and logic
 
 app.get('/', function(req, res) {
-  res.send('Hey there (: ');
+    res.render('index.jade');
 });
 
 app.get('/test/', function(req, res) {
@@ -206,7 +207,7 @@ function processYoutube(q) {
 
 function playSong(path) {
   console.log("Playing " + path);
-  player = spawn('afplay', [path]);
+  player = spawn('avplay', [path]);
 
   player.stdout.on('data', function(data) {
     console.log('stdout: ' + data);

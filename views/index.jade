@@ -1,2 +1,13 @@
-h1= title
-p Welcome to #{title}
+extends layout
+
+block main
+  div#main.row-fluid
+    h3#loading-message Loading...
+
+    ul#music-list
+
+block hidden
+  div.hidden-wrapper
+    div#add-song
+      p Whatch'a looking for?
+      input(type='textbox')
