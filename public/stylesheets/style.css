@@ -34,6 +34,7 @@ body {
   border: solid 1px #B73948;
   background: -webkit-gradient(linear, left top, left bottom, from(#F16C7C), to(#BF404F));
   background: -moz-linear-gradient(top, #F16C7C, #BF404F);
+  margin-right: 5px;
 }
 
 .button:hover {
@@ -51,9 +52,31 @@ body {
   background: -moz-linear-gradient(top,  #bf404f,  #f16c7c);
 }
 
+.white:hover {
+  background: #EDEDED;
+}
+
+.white:active {
+  color: #999;
+}
+
+.white {
+  color: #606060;
+  border: solid 1px #B7B7B7;
+  background: white;
+  text-shadow: none;
+}
+
 #add-container {
   margin-top: 20px;
   margin-right: 10px;
+  top: 50%;
+}
+
+.title {
+  font-family: 'Lobster', cursive;
+  font-size: 500%;
+  margin: 5px;
 }
 
 .play-container {
@@ -90,12 +113,38 @@ li {
 }
 
 .striped {
-  background: #FFFFEE;
-}
-
-#add-song {
+  background: #F5F5F5;
 }
 
 .hidden-wrapper {
   display: none;
+}
+
+
+
+input[type="text"] {
+  background-color: white;
+  border: 1px solid #CCC;
+  border-radius: 3px;
+  font-size: 300%;
+}
+
+input[type="text"]:focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  outline: 0;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+#button-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin-top: 4px;
+  margin-bottom: 2px;
+}
+
+#modal-title-text {
+  text-align: center;
+  right: 0;
+  color: #222;
 }

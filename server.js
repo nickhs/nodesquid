@@ -173,8 +173,8 @@ function processYoutube(q) {
 
     youtube.stdout.on('data', function(data) {
       data = String(data);
-      io.sockets.emit('download', data);
       q.state = data;
+      io.sockets.emit('download', q);
       if (data.indexOf('ffmpeg') != -1) {
         data = data.split(':');
         fileID = data[data.length-1].replace(' ', '');
@@ -186,6 +186,7 @@ function processYoutube(q) {
       var path = __dirname + "/" + fileID.replace('\n', '');
       q.path = path;
       q.state = 'done';
+      io.sockets.emit('done', q);
 
       for (var item in download_list) {
         if (download_list[item] == q) {
@@ -227,11 +228,12 @@ function addSong(q) {
   global_queue.push(q);
   console.log('Adding song to queue:');
   console.log(global_queue);
+  io.sockets.emit('add', q);
 
   if (global_queue.length == 1) {
     if (player == null) {
       global_queue.shift();
-      io.sockets.emit('play', q)
+      io.sockets.emit('play', q);
       playSong(q.path);
     }
   }

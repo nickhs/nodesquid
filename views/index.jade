@@ -9,5 +9,7 @@ block main
 block hidden
   div.hidden-wrapper
     div#add-song
-      p Whatch'a looking for?
-      input(type='textbox')
+      input(type='text', placeholder="♪ Now Dance! ♫")
+      div#button-container
+        button.button.white(type='cancel') Cancel
+        button#ajax-button.button Add!
