@@ -5,10 +5,12 @@ html
     link(rel='stylesheet', href='/stylesheets/bootstrap.min.css')
     link(rel='stylesheet', href='/stylesheets/colorbox.css')
     link(rel='stylesheet', href='http://fonts.googleapis.com/css?family=Lobster', type='text/css')
+    link(rel='stylesheet', href='/stylesheets/checkbox.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
     script(type='text/javascript', src='/javascripts/jquery.colorbox-min.js')
     script(type='text/javascript', src='/socket.io/socket.io.js')
+    script(type='text/javascript', src='/javascripts/checkboxes.js')
     script(type='text/javascript', src='/javascripts/magic.js')
     title ♫ Bard
 
@@ -20,6 +22,7 @@ html
               p.title Bard
             div#add-container.pull-right
               button#add-button.button Request a song
+              input(type="checkbox")
 
       block main
 

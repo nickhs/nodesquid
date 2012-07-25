@@ -41,6 +41,7 @@ $(document).ready(function() {
     });
   });
 
+  $('.on_off :checkbox').iphoneStyle();
   $('#loading-message').remove();
 
   $('#add-button').colorbox({inline: true, height: "150px", href: "#add-song"});

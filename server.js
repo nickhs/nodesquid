@@ -165,7 +165,7 @@ app.get('/allow', function(req, res) {
   json = {'allow': allow_all}
   io.sockets.emit(json)
   res.json(json)
-}
+});
 
 app.get('/queue', function(req, res) {
   res.json(global_queue);
