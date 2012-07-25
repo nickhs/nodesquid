@@ -12,6 +12,7 @@ var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7
 var global_queue = [];
 var download_list = [];
 var player = null;
+var allow_all = false;
 
 // Dependencies
 var querystring = require('querystring')
@@ -24,7 +25,11 @@ var spawn = require('child_process').spawn;
 
 // Custom Middleware
 function authorize(username, password) {
-  return 'sys' === username & 'ken' === password;
+  if (allow_all) {
+    return true
+  } else {
+    return 'sys' === username & 'ken' === password;
+  }
 }
 
 var allowCrossDomain = function(req, res, next) {
@@ -154,6 +159,13 @@ app.get('/play', function(req, res) {
     res.json({'result': 'nothing playing'})
   }
 });
+
+app.get('/allow', function(req, res) {
+  allow_all = true;
+  json = {'allow': allow_all}
+  io.sockets.emit(json)
+  res.json(json)
+}
 
 app.get('/queue', function(req, res) {
   res.json(global_queue);
