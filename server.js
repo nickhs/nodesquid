@@ -24,7 +24,7 @@ var spawn = require('child_process').spawn;
 
 // Custom Middleware
 function authorize(username, password) {
-  return 'sys' === username & 'foo2' === password;
+  return 'sys' === username & 'ken' === password;
 }
 
 var allowCrossDomain = function(req, res, next) {
@@ -93,7 +93,7 @@ app.get('/k/', express.basicAuth(authorize), function(req, res) {
   }
 });
 
-app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
+app.get('/y/*', function(req, gresp) {
   var search = req.params[0];
 
   var qoptions = {
@@ -145,6 +145,14 @@ app.get('/y/*', express.basicAuth(authorize), function(req, gresp) {
       processYoutube(queueObject);
     });
   });
+});
+
+app.get('/play', function(req, res) {
+  if (player != null) {
+    res.json({'result': 'playing', 'song': player.song})
+  } else {
+    res.json({'result': 'nothing playing'})
+  }
 });
 
 app.get('/queue', function(req, res) {
@@ -206,9 +214,12 @@ function processYoutube(q) {
   });
 };
 
-function playSong(path) {
+function playSong(q) {
+  path = q.path;
   console.log("Playing " + path);
-  player = spawn('avplay', [path]);
+  player = spawn('afplay', [path]);
+  player.song = q.title;
+  console.log(q.title);
 
   player.stdout.on('data', function(data) {
     console.log('stdout: ' + data);
@@ -234,7 +245,7 @@ function addSong(q) {
     if (player == null) {
       global_queue.shift();
       io.sockets.emit('play', q);
-      playSong(q.path);
+      playSong(q);
     }
   }
 };
@@ -251,7 +262,7 @@ function nextSong() {
 
   else {
     io.sockets.emit('play', q);
-    playSong(q.path);
+    playSong(q);
   }
 };
 
