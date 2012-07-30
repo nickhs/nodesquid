@@ -3,6 +3,13 @@ body {
   background: #EEE
 }
 
+.on_off {
+  width: 150px;
+  margin: 0 auto;
+  padding-top: 10px;
+  padding-right: 3px;
+}
+
 #main {
   margin-left: auto;
   margin-right: auto;

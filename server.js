@@ -24,12 +24,25 @@ var io = require('socket.io').listen(app);
 var spawn = require('child_process').spawn;
 
 // Custom Middleware
-function authorize(username, password) {
-  if (allow_all) {
-    return true
-  } else {
-    return 'sys' === username & 'ken' === password;
+// function custom_auth() {
+//   console.log("Allow all is: "+allow_all)
+//   return function(req, res, next) {
+//     if (!allow_all) {
+//       return express.basicAuth(req, res, next);
+//     }
+//     next();
+//   };
+// };
+
+var customBasicAuth = function(req, res, next) {
+  if (!allow_all) {
+    return express.basicAuth(authorize)(req, res, next);
   }
+  next();
+}
+
+function authorize(username, password) {
+  return 'sys' === username & 'ken' === password;
 }
 
 var allowCrossDomain = function(req, res, next) {
@@ -72,13 +85,13 @@ app.get('/test/', function(req, res) {
   res.end(f);
 });
 
-app.get('/s/*', express.basicAuth(authorize), function(req, res) {
+app.get('/s/*', customBasicAuth, function(req, res) {
   var statement = req.params[0];
   spawn('say', [statement]);
   res.json({'result': 'success', 'string': statement});
 });
 
-app.get('/v/:volume', express.basicAuth(authorize), function(req, res) {
+app.get('/v/:volume', customBasicAuth, function(req, res) {
   var string = "set Volume " + req.params.volume;
   console.log(string);
 
@@ -98,7 +111,7 @@ app.get('/k/', express.basicAuth(authorize), function(req, res) {
   }
 });
 
-app.get('/y/*', function(req, gresp) {
+app.get('/y/*', customBasicAuth, function(req, gresp) {
   var search = req.params[0];
 
   var qoptions = {
@@ -160,11 +173,29 @@ app.get('/play', function(req, res) {
   }
 });
 
-app.get('/allow', function(req, res) {
-  allow_all = true;
+app.get('/allow/*', express.basicAuth(authorize), function(req, res) {
+  set = req.params[0]
+  
+  if (set == 'true') {
+    allow_all = true;
+  }
+
+  else if (set == 'false') {
+    allow_all = false;
+  }
+
+  else {
+    res.json({'error': 'invalid command'})
+    return
+  }
+
   json = {'allow': allow_all}
-  io.sockets.emit(json)
+  io.sockets.emit('allow', json)
   res.json(json)
+});
+
+app.get('/allow', function(req, res) {
+  res.json({'allow': allow_all});
 });
 
 app.get('/queue', function(req, res) {

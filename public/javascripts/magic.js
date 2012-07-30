@@ -1,5 +1,6 @@
 var URL = "http://localhost:8000";
 var socket = io.connect(URL);
+var permission_box = null;
 
 function genListHtml(obj, download) {
   var o = $("<li><div class=\"play-container\"><img class=\"play-icon\"></div> \
@@ -41,7 +42,28 @@ $(document).ready(function() {
     });
   });
 
-  $('.on_off :checkbox').iphoneStyle();
+  permission_box = ($(':checkbox')).iphoneStyle({
+    checkedLabel: 'It\'s free game',
+    uncheckedLabel: 'SYS only',
+    resizeContainer: false,
+    resizeHandle: false,
+  });
+
+  $.getJSON(URL + '/allow', function(data) {
+    console.log(data);
+    permission_box.prop('checked', data.allow).iphoneStyle("refresh");
+  });
+
+  $(".on_off").click(function(event) {
+    console.log('click happened')
+    var setting = permission_box.prop('checked')
+    $.getJSON(URL + '/allow/' + setting, function(data) {
+      console.log(data);
+    }).error(function() {
+      permission_box.prop('checked', !setting).iphoneStyle("refresh");
+    });
+  });
+
   $('#loading-message').remove();
 
   $('#add-button').colorbox({inline: true, height: "150px", href: "#add-song"});
@@ -96,5 +118,12 @@ $(document).ready(function() {
     } else {
       $('ul#music-list').append(genListHtml(data, false));
     }
+  });
+
+  socket.on('allow', function(data) {
+    console.log("Socket Changing authorization to "+data.allow);
+    var set = data.allow;
+
+    permission_box.prop('checked', set).iphoneStyle("refresh")
   });
 });
