@@ -10,6 +10,11 @@ body {
   padding-right: 3px;
 }
 
+.playing {
+  background: #CCC;
+}
+
+
 #main {
   margin-left: auto;
   margin-right: auto;
@@ -129,8 +134,6 @@ ul {
 .hidden-wrapper {
   display: none;
 }
-
-
 
 input[type="text"] {
   background-color: white;

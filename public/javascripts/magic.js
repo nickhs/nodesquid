@@ -2,14 +2,14 @@ var URL = "http://localhost:8000";
 var socket = io.connect(URL);
 var permission_box = null;
 
-function genListHtml(obj, download) {
+function genListHtml(obj, state) {
   var o = $("<li><div class=\"play-container\"><img class=\"play-icon\"></div> \
             <div class=\"song-name\"></div><div class=\"queue-number\"></div></li>");
             
   o.attr('id', obj.id);
   $('div.song-name', o).text(obj.title);
 
-  if (download) {
+  if (state === 'download') {
     o.addClass('downloading');
     $('img', o).attr('src', '/images/Oh.png');
     $('div.queue-number', o).text(obj.state);
@@ -19,6 +19,10 @@ function genListHtml(obj, download) {
   else {
     $('img', o).attr('src', '/images/media-player-dark.png');
     $('div.queue-number', o).text(obj.length + ' seconds');
+
+    if (state == 'playing') {
+      o.attr('class', 'playing');
+    }
   }
 
   return o;
@@ -27,18 +31,24 @@ function genListHtml(obj, download) {
 $(document).ready(function() {
   console.log("Document ready");
 
+  $.getJSON(URL + "/play", function(data) {
+    if (data.result != 'nothing playing') {
+      $('#music-list').append(genListHtml(data, 'playing'))
+    }
+  });
+
   $.getJSON(URL + "/queue", function(data) {
     console.log("Data is: " + data);
 
     $.each(data, function(key, val) {
       console.log(val.title);
-      $('#music-list').append(genListHtml(val, false));
+      $('#music-list').append(genListHtml(val, 'normal'));
     });
   });
 
   $.getJSON(URL + '/dqueue', function(data) {
     $.each(data, function(key, val) {
-      $('#music-list').append(genListHtml(val, true));
+      $('#music-list').append(genListHtml(val, 'download'));
     });
   });
 
@@ -83,12 +93,28 @@ $(document).ready(function() {
   });
 
   socket.on('play', function(data) {
+    console.log("New song playing!")
+    
     var topItem = $('ul#music-list li:first')
-    if (topItem.attr('id') == data.id) {
+    if (topItem.hasClass('playing')) {
       topItem.remove();
     }
+
     else {
-      console.log("Uhoh " + data);
+      console.log("Uhoh");
+      console.log(topItem);
+      console.log(data);
+    }
+
+    var topItem = $('ul#music-list li:first')
+    if (topItem.attr('id') == data.id) {
+      topItem.addClass('playing');
+    }
+
+    else {
+      console.log('no bad');
+      console.log(topItem);
+      console.log(data);
     }
   });
 
@@ -102,7 +128,7 @@ $(document).ready(function() {
 
     else {
       console.log("New song added to download");
-      $('ul#music-list').append(genListHtml(data, true));
+      $('ul#music-list').append(genListHtml(data, 'download'));
     }
   });
 
@@ -114,9 +140,9 @@ $(document).ready(function() {
     console.log("Song got added!");
     ul = $('ul#music-list li.downloading')
     if (ul.length) {
-      ul.first().before(genListHtml(data, false));
+      ul.first().before(genListHtml(data, 'normal'));
     } else {
-      $('ul#music-list').append(genListHtml(data, false));
+      $('ul#music-list').append(genListHtml(data, 'normal'));
     }
   });
 
@@ -125,5 +151,9 @@ $(document).ready(function() {
     var set = data.allow;
 
     permission_box.prop('checked', set).iphoneStyle("refresh")
+  });
+
+  socket.on('empty', function(data) {
+    $('ul#music-list li:first').remove()
   });
 });

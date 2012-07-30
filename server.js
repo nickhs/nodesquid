@@ -167,7 +167,7 @@ app.get('/y/*', customBasicAuth, function(req, gresp) {
 
 app.get('/play', function(req, res) {
   if (player != null) {
-    res.json({'result': 'playing', 'song': player.song})
+    res.json(player.q)
   } else {
     res.json({'result': 'nothing playing'})
   }
@@ -261,7 +261,7 @@ function playSong(q) {
   path = q.path;
   console.log("Playing " + path);
   player = spawn('afplay', [path]);
-  player.song = q.title;
+  player.song = q;
   console.log(q.title);
 
   player.stdout.on('data', function(data) {
@@ -301,6 +301,7 @@ function nextSong() {
   
   if (q == undefined) {
     console.log("queue is empty, stopping!");
+    io.sockets.emit('empty', q);
   }
 
   else {
