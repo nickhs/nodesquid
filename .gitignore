@@ -2,3 +2,4 @@ node_modules
 *.part
 *.aac
 *.swp
+*.log
