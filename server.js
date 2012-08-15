@@ -4,6 +4,7 @@
 
 var YOUTUBE = "http://www.youtube.com"
 var API_KEY = 'AI39si7F0AW5Kquldiu-w0E2K7QrTx8h1QSsd7tdWD-FTgsbxhRzYTnvreH5k56h7UXt8-c4vZ2lmFAo5a23PfNwJ7TsUjBXUQ'
+var LOG_FILE = "play.log"
 
 /**
  * Global variables.
@@ -22,17 +23,6 @@ var express= require('express')
 var app = module.exports = express.createServer();
 var io = require('socket.io').listen(app);
 var spawn = require('child_process').spawn;
-
-// Custom Middleware
-// function custom_auth() {
-//   console.log("Allow all is: "+allow_all)
-//   return function(req, res, next) {
-//     if (!allow_all) {
-//       return express.basicAuth(req, res, next);
-//     }
-//     next();
-//   };
-// };
 
 var customBasicAuth = function(req, res, next) {
   if (!allow_all) {
